@@ -99,6 +99,8 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
+poppler-0.68.0
+.idea
 .env
 .venv
 env/

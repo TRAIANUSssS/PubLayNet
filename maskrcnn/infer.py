@@ -7,6 +7,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from torchvision.transforms import transforms
 import argparse
+from pdf2image import convert_from_path
 
 import cv2
 import numpy as np
@@ -79,7 +80,7 @@ def main(argv):
         help = "output directory of model results"
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if os.path.exists(MODEL_PATH):
         checkpoint_path = MODEL_PATH
@@ -137,10 +138,30 @@ def main(argv):
         os.mkdir(args.output_path)
         cv2.imwrite(args.output_path+'/{}'.format(os.path.basename(image_path)), image)
 
-    show(image)
+    # show(image)
 
 
 if __name__ == "__main__":
-    import sys
-    argv = sys.argv[1:]
-    main(argv)
+    # import sys
+    # argv = sys.argv[1:]
+    # print("-"*100)
+    # print(type(argv))
+    # print(argv)
+
+    # print(os.getcwd())
+
+    pages = convert_from_path(os.path.join(os.getcwd(), "test.pdf"), 500, poppler_path="C:/Users/CL/PycharmProjects/PubLayNet/poppler-0.68.0/bin")
+    total_page_count = len(pages)
+
+    for count, page in enumerate(pages):
+        page.save(f'pages/{count}.jpg', 'JPEG')
+
+    for page in range(total_page_count):
+        argv = [
+            '--image_path', f'pages/{page}.jpg',
+            '--model_path', 'mrcnn_model_dir\\model.pth',
+            '--output_path', 'model_segmentation_output_dir/'
+        ]
+        print(argv)
+
+        main(argv)

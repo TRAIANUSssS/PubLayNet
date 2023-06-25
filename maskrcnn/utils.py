@@ -1,5 +1,9 @@
 import cv2
 import numpy as np
+from PIL import Image
+
+COUNT = 0
+
 
 def show(img, name="disp", width=1000):
     """
@@ -15,36 +19,38 @@ def show(img, name="disp", width=1000):
 
 def overlay_mask(image, mask, alpha=0.5):
     c = (np.random.random((1, 3)) * 153 + 102).tolist()[0]
- 
+
     mask = np.dstack([mask.astype(np.uint8)] * 3)
     mask = cv2.threshold(mask, 127.5, 255, cv2.THRESH_BINARY)[1]
     inv_mask = 255 - mask
 
     overlay = image.copy()
-    overlay = np.minimum(overlay, inv_mask) 
+    overlay = np.minimum(overlay, inv_mask)
 
     color_mask = (mask.astype(np.bool) * c).astype(np.uint8)
-    overlay = np.maximum(overlay, color_mask).astype(np.uint8) 
+    overlay = np.maximum(overlay, color_mask).astype(np.uint8)
 
     image = cv2.addWeighted(image, alpha, overlay, 1 - alpha, 0)
     return image
 
 
 def overlay_ann(image, mask, box, label, score, alpha=0.5):
+    global COUNT
+    first_img = image
     c = np.random.random((1, 3))
     mask_color = (c * 153 + 102).tolist()[0]
     text_color = (c * 183 + 72).tolist()[0]
- 
+
     mask = np.dstack([mask.astype(np.uint8)] * 3)
     mask = cv2.threshold(mask, 127.5, 255, cv2.THRESH_BINARY)[1]
     inv_mask = 255 - mask
 
     overlay = image.copy()
-    overlay = np.minimum(overlay, inv_mask) 
+    overlay = np.minimum(overlay, inv_mask)
 
-    color_mask = (mask.astype(np.bool) * mask_color).astype(np.uint8)
-        
-    overlay = np.maximum(overlay, color_mask).astype(np.uint8) 
+    color_mask = (mask.astype(np.bool_) * mask_color).astype(np.uint8)
+
+    overlay = np.maximum(overlay, color_mask).astype(np.uint8)
 
     image = cv2.addWeighted(image, alpha, overlay, 1 - alpha, 0)
 
@@ -79,5 +85,13 @@ def overlay_ann(image, mask, box, label, score, alpha=0.5):
         cv2.FONT_HERSHEY_SIMPLEX,
         0.3, (0, 0, 0), 1
     )
- 
+    # print("{}".format(label), type(image))
+    if "{}".format(label) == "figure":
+        first_img = first_img[box[1]:box[3], box[0]:box[2]]
+        # print(box[0], box[1], box[0] + label_size_width, box[1] + 10 - label_size_height)
+        im = Image.fromarray(first_img)
+        im.save(f"imgs/{COUNT}.jpeg")
+        COUNT += 1
+        pass
+
     return image
